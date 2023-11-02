@@ -1,5 +1,5 @@
 /* 
-Pizza Metrics Case Questions
+A. Pizza Metrics Case Questions
 */
 
 -- customer_orders cleaned
@@ -152,7 +152,7 @@ SELECT
 FROM
 	customer_orders_clean co
 GROUP BY hour
-ORDER BY hour ASC;
+ORDER BY hour ASC
 
 -- 10. What was the volume of orders for each day of the week?
 
@@ -162,4 +162,94 @@ SELECT
 FROM
 	customer_orders_clean co
 GROUP BY day
-ORDER BY day ASC;
+ORDER BY day ASC
+
+
+/* 
+B. Runner and Customer Experience
+*/
+
+-- 1. How many runners signed up for each 1 week period? (i.e. week starts 2021-01-01)
+
+SELECT
+	EXTRACT(WEEK FROM registration_date) AS registration_week,
+	COUNT(runner_id) AS runner_registration
+FROM 
+	pizza_runner.runners
+GROUP BY registration_week
+-- query is returning week 53
+
+-- 2. What was the average time in minutes it took for each runner to arrive at the Pizza Runner HQ to pickup the order?
+SELECT 
+	ro.runner_id,
+	ROUND(AVG(EXTRACT(MINUTE FROM (TO_TIMESTAMP(pickup_time, 'YYYY-MM-DD HH24:MI:SS')) - co.order_time)), 0) AS avg_minutes
+FROM 
+	runner_orders_clean ro
+JOIN customer_orders_clean co ON ro.order_id=co.order_id
+WHERE cancellation = ''
+GROUP BY ro.runner_id
+
+-- 3. Is there any relationship between the number of pizzas and how long the order takes to prepare?
+-- create cte to get count of pizzas per order
+WITH pizza_count_table AS (
+	SELECT
+		order_id,
+		COUNT(order_id) AS number_of_pizzas,
+		order_time
+	FROM 
+		customer_orders_clean
+	GROUP BY order_id, order_time
+)
+SELECT
+	pc.number_of_pizzas,
+	ROUND(AVG(EXTRACT(MINUTE FROM (TO_TIMESTAMP(ro.pickup_time, 'YYYY-MM-DD HH24:MI:SS')) - pc.order_time)), 1) AS avg_minutes
+FROM
+	pizza_count_table pc
+JOIN runner_orders_clean ro ON pc.order_id=ro.order_id
+WHERE cancellation = ''
+GROUP BY pc.number_of_pizzas
+
+-- 4. What was the average distance travelled for each customer?
+
+SELECT 
+	co.customer_id,
+	ROUND(AVG(CAST(distance AS NUMERIC)), 1)
+FROM 
+	customer_orders_clean co
+JOIN runner_orders_clean ro ON co.order_id=ro.order_id
+WHERE cancellation = ''
+GROUP BY co.customer_id
+
+-- 5. What was the difference between the longest and shortest delivery times for all orders?
+
+SELECT
+	(MAX(CAST(duration AS NUMERIC)) - MIN(CAST(duration AS NUMERIC))) AS range
+FROM
+	runner_orders_clean
+WHERE cancellation = ''
+	
+-- 6. What was the average speed for each runner for each delivery and do you notice any trend for these values?
+
+SELECT 
+	runner_id,
+	order_id,
+	ROUND(CAST(distance AS NUMERIC) / CAST(duration AS NUMERIC), 2) * 60 AS speed_km_per_hr
+FROM
+	runner_orders_clean
+WHERE cancellation = ''
+ORDER BY runner_id, speed_km_per_hr ASC
+
+-- 7. What is the successful delivery percentage for each runner?
+
+SELECT 
+	runner_id,
+	ROUND(SUM(CASE
+		WHEN cancellation <> '' THEN 0 
+		ELSE 1
+	END) / CAST(COUNT(order_id) AS NUMERIC) * 100, 0) AS delivery_success
+FROM
+	runner_orders_clean
+GROUP BY runner_id
+ORDER BY delivery_success DESC
+
+	
