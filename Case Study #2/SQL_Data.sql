@@ -252,4 +252,37 @@ FROM
 GROUP BY runner_id
 ORDER BY delivery_success DESC
 
+
+/* 
+C. Ingredient Optimization
+*/
+
+-- 1. What are the standard ingredients for each pizza?
+
 	
+WITH topping_table AS (
+	SELECT
+		pizza_id,
+		CAST(topping AS NUMERIC)
+	FROM
+		pizza_runner.pizza_recipes,
+		UNNEST(string_to_array(toppings, ', ')) topping -- separated string of toppings
+)
+SELECT
+	pn.pizza_name,
+	pt.topping_name
+FROM
+	topping_table tt
+JOIN pizza_runner.pizza_toppings pt ON tt.topping=pt.topping_id
+JOIN pizza_runner.pizza_names pn ON tt.pizza_id=pn.pizza_id
+-- 2. What was the most commonly added extra?
+-- 3. What was the most common exclusion?
+-- 4. Generate an order item for each record in the customers_orders table in the format of one of the following:
+--		Meat Lovers
+--		Meat Lovers - Exclude Beef
+--		Meat Lovers - Extra Bacon
+--		Meat Lovers - Exclude Cheese, Bacon - Extra Mushroom, Peppers
+-- 5. Generate an alphabetically ordered comma separated ingredient list for each pizza order from the customer_orders table and add a 2x in front of any relevant ingredients
+--		For example: "Meat Lovers: 2xBacon, Beef, ... , Salami"
+-- 6. What is the total quantity of each ingredient used in all delivered pizzas sorted by most frequent first?
+
