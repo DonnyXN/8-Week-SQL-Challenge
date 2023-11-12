@@ -258,7 +258,6 @@ C. Ingredient Optimization
 */
 
 -- 1. What are the standard ingredients for each pizza?
-
 	
 WITH topping_table AS (
 	SELECT
@@ -266,16 +265,34 @@ WITH topping_table AS (
 		CAST(topping AS NUMERIC)
 	FROM
 		pizza_runner.pizza_recipes,
-		UNNEST(string_to_array(toppings, ', ')) topping -- separated string of toppings
+		UNNEST(STRING_TO_ARRAY(toppings, ', ')) topping -- separated string of toppings
 )
 SELECT
 	pn.pizza_name,
-	pt.topping_name
+	STRING_AGG(pt.topping_name, ', ') AS toppings
 FROM
 	topping_table tt
 JOIN pizza_runner.pizza_toppings pt ON tt.topping=pt.topping_id
 JOIN pizza_runner.pizza_names pn ON tt.pizza_id=pn.pizza_id
+GROUP BY pn.pizza_name
+
 -- 2. What was the most commonly added extra?
+WITH extra_cte AS (
+	SELECT
+		CAST(UNNEST(STRING_TO_ARRAY(extras, ', ')) AS NUMERIC) AS extra -- separate by comma into own rows
+	FROM
+		customer_orders_clean
+	WHERE extras <> ''
+)
+SELECT 
+	COUNT(pt.topping_name) AS topping_count,
+	pt.topping_name
+FROM
+	extra_cte t
+JOIN pizza_runner.pizza_toppings pt ON t.extra=pt.topping_id
+GROUP BY pt.topping_name
+ORDER BY topping_count DESC
+	
 -- 3. What was the most common exclusion?
 -- 4. Generate an order item for each record in the customers_orders table in the format of one of the following:
 --		Meat Lovers
