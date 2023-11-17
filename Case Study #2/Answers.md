@@ -19,7 +19,6 @@ https://8weeksqlchallenge.com/case-study-2/
         customer_orders_clean
 ```
 ![Alt text](image.png)
-
 ---
 **2. How many unique customer orders were made?**
 ``````sql
@@ -182,40 +181,40 @@ https://8weeksqlchallenge.com/case-study-2/
 
 ---
 **3. Is there any relationship between the number of pizzas and how long the order takes to prepare?**
-``````sql
-    -- create cte to get count of pizzas per order
-    WITH pizza_count_table AS (
-        SELECT
-            order_id,
-            COUNT(order_id) AS number_of_pizzas,
-            order_time
-        FROM 
-            customer_orders_clean
-        GROUP BY order_id, order_time
-    )
+```sql
+-- create cte to get count of pizzas per order
+WITH pizza_count_table AS (
     SELECT
-        pc.number_of_pizzas,
-        ROUND(AVG(EXTRACT(MINUTE FROM (TO_TIMESTAMP(ro.pickup_time, 'YYYY-MM-DD HH24:MI:SS')) - pc.order_time)), 1) AS avg_minutes
-    FROM
-        pizza_count_table pc
-    JOIN runner_orders_clean ro ON pc.order_id=ro.order_id
-    WHERE cancellation = ''
-    GROUP BY pc.number_of_pizzas
-``````
+        order_id,
+        COUNT(order_id) AS number_of_pizzas,
+        order_time
+    FROM 
+        customer_orders_clean
+    GROUP BY order_id, order_time
+)
+SELECT
+    pc.number_of_pizzas,
+    ROUND(AVG(EXTRACT(MINUTE FROM (TO_TIMESTAMP(ro.pickup_time, 'YYYY-MM-DD HH24:MI:SS')) - pc.order_time)), 1) AS avg_minutes
+FROM
+    pizza_count_table pc
+JOIN runner_orders_clean ro ON pc.order_id=ro.order_id
+WHERE cancellation = ''
+GROUP BY pc.number_of_pizzas
+```
 ![Alt text](image-12.png)
 
 ---
 **4. What was the average distance travelled for each customer?**
-``````sql
-    SELECT 
-        co.customer_id,
-        ROUND(AVG(CAST(distance AS NUMERIC)), 1)
-    FROM 
-        customer_orders_clean co
-    JOIN runner_orders_clean ro ON co.order_id=ro.order_id
-    WHERE cancellation = ''
-    GROUP BY co.customer_id
-``````
+```sql
+SELECT 
+    co.customer_id,
+    ROUND(AVG(CAST(distance AS NUMERIC)), 1)
+FROM 
+    customer_orders_clean co
+JOIN runner_orders_clean ro ON co.order_id=ro.order_id
+WHERE cancellation = ''
+GROUP BY co.customer_id
+```
 ![Alt text](image-13.png)
 
 ---
