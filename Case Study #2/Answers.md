@@ -19,6 +19,7 @@ https://8weeksqlchallenge.com/case-study-2/
         customer_orders_clean
 ```
 ![Alt text](image.png)
+
 ---
 **2. How many unique customer orders were made?**
 ``````sql
