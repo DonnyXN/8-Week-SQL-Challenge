@@ -60,11 +60,34 @@ FROM
 **2. What is the monthly distribution of trial plan start_date values for our dataset - use the start of the month as the group by value**
 
 ```sql
-
+SELECT 
+	DATE_PART('MONTH', sub.start_date) AS month_date,
+	TO_CHAR(sub.start_date, 'Month') AS month,
+	COUNT(sub.customer_id)
+FROM
+	foodie_fi.plans p
+JOIN foodie_fi.subscriptions sub ON p.plan_id = sub.plan_id
+WHERE sub.plan_id = '0'
+GROUP BY month_date, month
+ORDER BY month_date ASC
 ```
-
+![Alt text](image-10.png)
 
 **3. What plan start_date values occur after the year 2020 for our dataset? Show the breakdown by count of events for each plan_name**
+
+```sql
+SELECT
+	p.plan_id,
+	p.plan_name,
+	COUNT(sub.customer_id)
+FROM
+	foodie_fi.plans p
+JOIN foodie_fi.subscriptions sub ON p.plan_id = sub.plan_id
+WHERE sub.start_date >= '2021-01-01'
+GROUP BY p.plan_id, p.plan_name
+ORDER BY p.plan_id ASC
+```
+
 **4. What is the customer count and percentage of customers who have churned rounded to 1 decimal place?**
 **5. How many customers have churned straight after their initial free trial - what percentage is this rounded to the nearest whole number?**
 **6. What is the number and percentage of customer plans after their initial free trial?**

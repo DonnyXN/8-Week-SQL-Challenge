@@ -18,11 +18,11 @@ Danny has provided you with a sample of his overall customer data due to privacy
 ## Questions And Solutions
 **1. What is the total amount each customer spent at the restaurant?**
 ``````sql
-    SELECT sales.customer_id, 
-    	    SUM(menu.price) AS total_spent
-    FROM dannys_diner.sales
-    INNER JOIN dannys_diner.menu ON sales.product_id=menu.product_id
-    GROUP BY sales.customer_id
+SELECT sales.customer_id, 
+        SUM(menu.price) AS total_spent
+FROM dannys_diner.sales
+INNER JOIN dannys_diner.menu ON sales.product_id=menu.product_id
+GROUP BY sales.customer_id
 ``````
 
 | customer_id | total_spent |
@@ -32,13 +32,13 @@ Danny has provided you with a sample of his overall customer data due to privacy
 | A           | 76          |
 
 ---
-``````sql
-**2. How many days has each customer visited the restaurant?**
 
-    SELECT sales.customer_id, 
-            COUNT(DISTINCT sales.order_date) AS days_visited
-    FROM dannys_diner.sales
-    GROUP BY sales.customer_id
+**2. How many days has each customer visited the restaurant?**
+``````sql
+SELECT sales.customer_id, 
+        COUNT(DISTINCT sales.order_date) AS days_visited
+FROM dannys_diner.sales
+GROUP BY sales.customer_id
 ``````
 
 | customer_id | days_visited |

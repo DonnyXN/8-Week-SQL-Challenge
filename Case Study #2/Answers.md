@@ -13,172 +13,174 @@ https://8weeksqlchallenge.com/case-study-2/
 
 **1. How many pizzas were ordered?**
 ```sql
-    SELECT 
-        COUNT(order_id) AS pizzas_ordered
-    FROM 
-        customer_orders_clean
+SELECT 
+    COUNT(order_id) AS pizzas_ordered
+FROM 
+    customer_orders_clean
 ```
-![Alt text](image.png)
+![Alt text](tables/image.png)
+
+![Alt text](Users\Donny\SQLChallenges\8-Week-SQL-Challenge\Case Study #2)
 
 ---
 **2. How many unique customer orders were made?**
-``````sql
-    SELECT
-        COUNT(DISTINCT(order_id)) AS unique_customer_ordered
-    FROM 
-        customer_orders_clean
-``````
-![Alt text](image-1.png)
+```sql
+SELECT
+    COUNT(DISTINCT(order_id)) AS unique_customer_ordered
+FROM 
+    customer_orders_clean
+```
+![Alt text](tables/image-1.png)
 
 ---
 **3. How many successful orders were delivered by each runner?**
-``````sql
-    SELECT
-        COUNT(cancellation) AS successful_orders
-    FROM 
-        runner_orders_clean
-    WHERE cancellation = ''
-``````
-![Alt text](image-2.png)
+```sql
+SELECT
+    COUNT(cancellation) AS successful_orders
+FROM 
+    runner_orders_clean
+WHERE cancellation = ''
+```
+![Alt text](tables/image-2.png)
 
 ---
 **4. How many of each type of pizza was delivered?**
-``````sql
-    SELECT 
-        co.pizza_id,
-        COUNT(co.pizza_id) as pizzas_delivered
-    FROM 
-        customer_orders_clean co
-    JOIN runner_orders_clean ro ON co.order_id=ro.order_id
-    WHERE cancellation = '' -- avoid pizzas cancelled
-    GROUP BY pizza_id
-``````
-![Alt text](image-3.png)
+```sql
+SELECT 
+    co.pizza_id,
+    COUNT(co.pizza_id) as pizzas_delivered
+FROM 
+    customer_orders_clean co
+JOIN runner_orders_clean ro ON co.order_id=ro.order_id
+WHERE cancellation = '' -- avoid pizzas cancelled
+GROUP BY pizza_id
+```
+![Alt text](tables/image-3.png)
 
 ---
 **5. How many Vegetarian and Meatlovers were ordered by each customer?**
-``````sql
-    SELECT
-        co.customer_id,
-        COUNT(pi.pizza_name) AS pizzas_ordered
-    FROM 
-        customer_orders_clean co
-    JOIN pizza_runner.pizza_names pi ON co.pizza_id=pi.pizza_id
-    GROUP BY co.customer_id
-``````
-![Alt text](image-4.png)
+```sql
+SELECT
+    co.customer_id,
+    COUNT(pi.pizza_name) AS pizzas_ordered
+FROM 
+    customer_orders_clean co
+JOIN pizza_runner.pizza_names pi ON co.pizza_id=pi.pizza_id
+GROUP BY co.customer_id
+```
+![Alt text](tables/image-4.png)
 
 ---
 **6. What was the maximum number of pizzas delivered in a single order?**
-``````sql
-    SELECT
-        co.order_id,
-        COUNT(co.pizza_id) AS pizza_count
-    FROM
-        customer_orders_clean co
-    JOIN runner_orders_clean ro ON co.order_id=ro.order_id
-    WHERE cancellation = '' -- avoid pizzas cancelled
-    GROUP BY co.order_id
-``````
-![Alt text](image-5.png)
+```sql
+SELECT
+    co.order_id,
+    COUNT(co.pizza_id) AS pizza_count
+FROM
+    customer_orders_clean co
+JOIN runner_orders_clean ro ON co.order_id=ro.order_id
+WHERE cancellation = '' -- avoid pizzas cancelled
+GROUP BY co.order_id
+```
+![Alt text](tables/image-5.png)
 
 ---
 **7. For each customer, how many delivered pizzas had at least 1 change and how many had no changes?**
 
-````sql
-    SELECT	
-        co.customer_id,
-        SUM(CASE
-            WHEN co.exclusions != '' AND co.extras != '' THEN 1
-            WHEN co.exclusions = '' AND co.extras != '' THEN 1
-            WHEN co.exclusions != '' AND co.extras = '' THEN 1
-            ELSE 0
-        END 
-        ) AS pizzas_changed,
-        SUM(CASE
-            WHEN co.exclusions = '' AND co.extras = '' THEN 1
-            ELSE 0
-        END 
-        ) AS pizzas_unchanged
-    FROM
-        customer_orders_clean co
-    JOIN runner_orders_clean ro ON co.order_id=ro.order_id 
-    WHERE cancellation = '' -- avoid pizzas cancelled
-    GROUP BY co.customer_id
-````
-![Alt text](image-6.png)
+```sql
+SELECT	
+    co.customer_id,
+    SUM(CASE
+        WHEN co.exclusions != '' AND co.extras != '' THEN 1
+        WHEN co.exclusions = '' AND co.extras != '' THEN 1
+        WHEN co.exclusions != '' AND co.extras = '' THEN 1
+        ELSE 0
+    END 
+    ) AS pizzas_changed,
+    SUM(CASE
+        WHEN co.exclusions = '' AND co.extras = '' THEN 1
+        ELSE 0
+    END 
+    ) AS pizzas_unchanged
+FROM
+    customer_orders_clean co
+JOIN runner_orders_clean ro ON co.order_id=ro.order_id 
+WHERE cancellation = '' -- avoid pizzas cancelled
+GROUP BY co.customer_id
+```
+![Alt text](tables/image-6.png)
 
 ---
 **8. How many pizzas were delivered that had both exclusions and extras?**
-``````sql
-    SELECT
-        SUM(CASE
-            WHEN co.exclusions != '' AND co.extras != '' THEN 1
-            ELSE 0
-        END 
-        ) AS pizza_with_exclusions_and_extras
-    FROM
-        customer_orders_clean co
-    JOIN runner_orders_clean ro ON co.order_id=ro.order_id 
-    WHERE cancellation = '' -- avoid pizzas cancelled
-``````
-![Alt text](image-7.png)
+```sql
+SELECT
+    SUM(CASE
+        WHEN co.exclusions != '' AND co.extras != '' THEN 1
+        ELSE 0
+    END 
+    ) AS pizza_with_exclusions_and_extras
+FROM
+    customer_orders_clean co
+JOIN runner_orders_clean ro ON co.order_id=ro.order_id 
+WHERE cancellation = '' -- avoid pizzas cancelled
+```
+![Alt text](tables/image-7.png)
 
 ---
 **9. What was the total volume of pizzas ordered for each hour of the day?**
-``````sql
-    SELECT 
-        EXTRACT(HOUR FROM order_time) AS hour,
-        COUNT(order_id) AS pizzas
-    FROM
-        customer_orders_clean co
-    GROUP BY hour
-    ORDER BY hour ASC
-``````
-![Alt text](image-8.png)
+```sql
+SELECT 
+    EXTRACT(HOUR FROM order_time) AS hour,
+    COUNT(order_id) AS pizzas
+FROM
+    customer_orders_clean co
+GROUP BY hour
+ORDER BY hour ASC
+```
+![Alt text](tables/image-8.png)
 
 ---
 **10. What was the volume of orders for each day of the week?**
-``````sql
-    SELECT 
-        TO_CHAR(order_time, 'Dy') AS day,
-        COUNT(order_id) AS pizzas
-    FROM
-        customer_orders_clean co
-    GROUP BY day
-    ORDER BY day ASC
-``````
-![Alt text](image-9.png)
+```sql
+SELECT 
+    TO_CHAR(order_time, 'Dy') AS day,
+    COUNT(order_id) AS pizzas
+FROM
+    customer_orders_clean co
+GROUP BY day
+ORDER BY day ASC
+```
+![Alt text](tables/image-9.png)
 
 ---
 ### B. Runner and Customer Experience
 
 
 **1. How many runners signed up for each 1 week period? (i.e. week starts 2021-01-01)**
-``````sql
-    SELECT
-        EXTRACT(WEEK FROM registration_date) AS registration_week,
-        COUNT(runner_id) AS runner_registration
-    FROM 
-        pizza_runner.runners
-    GROUP BY registration_week
-    -- query is returning week 53
-``````
-![Alt text](image-10.png)
+```sql
+SELECT
+    EXTRACT(WEEK FROM registration_date) AS registration_week,
+    COUNT(runner_id) AS runner_registration
+FROM 
+    pizza_runner.runners
+GROUP BY registration_week
+-- query is returning week 53
+```
+![Alt text](tables/image-10.png)
 
 ---
 **2. What was the average time in minutes it took for each runner to arrive at the Pizza Runner HQ to pickup the order?**
-``````sql
-    SELECT 
-        ro.runner_id,
-        ROUND(AVG(EXTRACT(MINUTE FROM (TO_TIMESTAMP(pickup_time, 'YYYY-MM-DD HH24:MI:SS')) - co.order_time)), 0) AS avg_minutes
-    FROM 
-        runner_orders_clean ro
-    JOIN customer_orders_clean co ON ro.order_id=co.order_id
-    WHERE cancellation = ''
-    GROUP BY ro.runner_id
-``````
-![Alt text](image-11.png)
+```sql
+SELECT 
+    ro.runner_id,
+    ROUND(AVG(EXTRACT(MINUTE FROM (TO_TIMESTAMP(pickup_time, 'YYYY-MM-DD HH24:MI:SS')) - co.order_time)), 0) AS avg_minutes
+FROM 
+    runner_orders_clean ro
+JOIN customer_orders_clean co ON ro.order_id=co.order_id
+WHERE cancellation = ''
+GROUP BY ro.runner_id
+```
+![Alt text](tables/image-11.png)
 
 ---
 **3. Is there any relationship between the number of pizzas and how long the order takes to prepare?**
@@ -202,7 +204,7 @@ JOIN runner_orders_clean ro ON pc.order_id=ro.order_id
 WHERE cancellation = ''
 GROUP BY pc.number_of_pizzas
 ```
-![Alt text](image-12.png)
+![Alt text](tables/image-12.png)
 
 ---
 **4. What was the average distance travelled for each customer?**
@@ -216,117 +218,117 @@ JOIN runner_orders_clean ro ON co.order_id=ro.order_id
 WHERE cancellation = ''
 GROUP BY co.customer_id
 ```
-![Alt text](image-13.png)
+![Alt text](tables/image-13.png)
 
 ---
 **5. What was the difference between the longest and shortest delivery times for all orders?**
-``````sql
-    SELECT
-        (MAX(CAST(duration AS NUMERIC)) - MIN(CAST(duration AS NUMERIC))) AS range
-    FROM
-        runner_orders_clean
-    WHERE cancellation = ''
-``````
-![Alt text](image-14.png)
+```sql
+SELECT
+    (MAX(CAST(duration AS NUMERIC)) - MIN(CAST(duration AS NUMERIC))) AS range
+FROM
+    runner_orders_clean
+WHERE cancellation = ''
+```
+![Alt text](tables/image-14.png)
 
 ---
 **6. What was the average speed for each runner for each delivery and do you notice any trend for these values?**
-``````sql
-    SELECT 
-        runner_id,
-        order_id,
-        ROUND(CAST(distance AS NUMERIC) / CAST(duration AS NUMERIC), 2) * 60 AS speed_km_per_hr
-    FROM
-        runner_orders_clean
-    WHERE cancellation = ''
-    ORDER BY runner_id, speed_km_per_hr ASC
-``````
-![Alt text](image-15.png)
+```sql
+SELECT 
+    runner_id,
+    order_id,
+    ROUND(CAST(distance AS NUMERIC) / CAST(duration AS NUMERIC), 2) * 60 AS speed_km_per_hr
+FROM
+    runner_orders_clean
+WHERE cancellation = ''
+ORDER BY runner_id, speed_km_per_hr ASC
+```
+![Alt text](tables/image-15.png)
 
 ---
 **7. What is the successful delivery percentage for each runner?**
-``````sql
-    SELECT 
-        runner_id,
-        ROUND(SUM(CASE
-            WHEN cancellation <> '' THEN 0 
-            ELSE 1
-        END) / CAST(COUNT(order_id) AS NUMERIC) * 100, 0) AS delivery_success
-    FROM
-        runner_orders_clean
-    GROUP BY runner_id
-    ORDER BY delivery_success DESC
-``````
-![Alt text](image-16.png)
+```sql
+SELECT 
+    runner_id,
+    ROUND(SUM(CASE
+        WHEN cancellation <> '' THEN 0 
+        ELSE 1
+    END) / CAST(COUNT(order_id) AS NUMERIC) * 100, 0) AS delivery_success
+FROM
+    runner_orders_clean
+GROUP BY runner_id
+ORDER BY delivery_success DESC
+```
+![Alt text](tables/image-16.png)
 
 ---
 ### C. Ingredient Optimization
 
 
 **1. What are the standard ingredients for each pizza?**
-``````sql
-    WITH topping_table AS (
-        SELECT
-            pizza_id,
-            CAST(topping AS NUMERIC)
-        FROM
-            pizza_runner.pizza_recipes,
-            UNNEST(STRING_TO_ARRAY(toppings, ', ')) topping -- separated string of toppings
-    )
+```sql
+WITH topping_table AS (
     SELECT
-        pn.pizza_name,
-        STRING_AGG(pt.topping_name, ', ') AS toppings
+        pizza_id,
+        CAST(topping AS NUMERIC)
     FROM
-        topping_table tt
-    JOIN pizza_runner.pizza_toppings pt ON tt.topping=pt.topping_id
-    JOIN pizza_runner.pizza_names pn ON tt.pizza_id=pn.pizza_id
-    GROUP BY pn.pizza_name
-``````
-![Alt text](image-17.png)
+        pizza_runner.pizza_recipes,
+        UNNEST(STRING_TO_ARRAY(toppings, ', ')) topping -- separated string of toppings
+)
+SELECT
+    pn.pizza_name,
+    STRING_AGG(pt.topping_name, ', ') AS toppings
+FROM
+    topping_table tt
+JOIN pizza_runner.pizza_toppings pt ON tt.topping=pt.topping_id
+JOIN pizza_runner.pizza_names pn ON tt.pizza_id=pn.pizza_id
+GROUP BY pn.pizza_name
+```
+![Alt text](tables/image-17.png)
 
 ---
 **2. What was the most commonly added extra?**
-``````sql
-    WITH extra_cte AS (
-        SELECT
-            CAST(UNNEST(STRING_TO_ARRAY(extras, ', ')) AS NUMERIC) AS extra -- separate by comma into own rows
-        FROM
-            customer_orders_clean
-        WHERE extras <> ''
-    )
-    SELECT 
-        COUNT(pt.topping_name) AS topping_count,
-        pt.topping_name
+```sql
+WITH extra_cte AS (
+    SELECT
+        CAST(UNNEST(STRING_TO_ARRAY(extras, ', ')) AS NUMERIC) AS extra -- separate by comma into own rows
     FROM
-        extra_cte t
-    JOIN pizza_runner.pizza_toppings pt ON t.extra=pt.topping_id
-    GROUP BY pt.topping_name
-    ORDER BY topping_count DESC
-    LIMIT 1
-``````
-![Alt text](image-18.png)
+        customer_orders_clean
+    WHERE extras <> ''
+)
+SELECT 
+    COUNT(pt.topping_name) AS topping_count,
+    pt.topping_name
+FROM
+    extra_cte t
+JOIN pizza_runner.pizza_toppings pt ON t.extra=pt.topping_id
+GROUP BY pt.topping_name
+ORDER BY topping_count DESC
+LIMIT 1
+```
+![Alt text](tables/image-18.png)
 
 ---
 **3. What was the most common exclusion?**
-``````sql
-    WITH extra_cte AS (
-        SELECT
-            CAST(UNNEST(STRING_TO_ARRAY(exclusions, ', ')) AS NUMERIC) AS excluded -- separate by comma into own rows
-        FROM
-            customer_orders_clean
-        WHERE exclusions <> ''
-    )
-    SELECT 
-        COUNT(pt.topping_name) AS exclusion_count,
-        pt.topping_name
+```sql
+WITH extra_cte AS (
+    SELECT
+        CAST(UNNEST(STRING_TO_ARRAY(exclusions, ', ')) AS NUMERIC) AS excluded -- separate by comma into own rows
     FROM
-        extra_cte t
-    JOIN pizza_runner.pizza_toppings pt ON t.excluded=pt.topping_id
-    GROUP BY pt.topping_name
-    ORDER BY exclusion_count DESC
-    LIMIT 1
-``````
-![Alt text](image-19.png)
+        customer_orders_clean
+    WHERE exclusions <> ''
+)
+SELECT 
+    COUNT(pt.topping_name) AS exclusion_count,
+    pt.topping_name
+FROM
+    extra_cte t
+JOIN pizza_runner.pizza_toppings pt ON t.excluded=pt.topping_id
+GROUP BY pt.topping_name
+ORDER BY exclusion_count DESC
+LIMIT 1
+```
+![Alt text](tables/image-19.png)
 
 ---
 **4. Generate an order item for each record in the customers_orders table in the format of one of the following:**
