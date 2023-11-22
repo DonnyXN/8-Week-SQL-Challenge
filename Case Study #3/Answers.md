@@ -57,6 +57,10 @@ FROM
 ```
 ![Alt text](image-9.png)
 
+| customer_count|
+| ------------- |
+| 1000          |
+
 **2. What is the monthly distribution of trial plan start_date values for our dataset - use the start of the month as the group by value**
 
 ```sql
@@ -71,7 +75,21 @@ WHERE sub.plan_id = '0'
 GROUP BY month_date, month
 ORDER BY month_date ASC
 ```
-![Alt text](image-10.png)
+
+| month_date | month     | count |
+|------------|-----------|-------|
+| 1          | January   | 88    |
+| 2          | February  | 68    |
+| 3          | March     | 94    |
+| 4          | April     | 81    |
+| 5          | May       | 88    |
+| 6          | June      | 79    |
+| 7          | July      | 89    |
+| 8          | August    | 88    |
+| 9          | September | 87    |
+| 10         | October   | 79    |
+| 11         | November  | 75    |
+| 12         | December  | 84    |
 
 **3. What plan start_date values occur after the year 2020 for our dataset? Show the breakdown by count of events for each plan_name**
 
@@ -87,6 +105,12 @@ WHERE sub.start_date >= '2021-01-01'
 GROUP BY p.plan_id, p.plan_name
 ORDER BY p.plan_id ASC
 ```
+| plan_name		 | count |
+| ---------------|------ |
+| "basic monthly"| 8     |
+| "pro monthly"	 | 60    |
+| "pro annual"	 | 63    |
+| "churn"		 | 71    |
 
 **4. What is the customer count and percentage of customers who have churned rounded to 1 decimal place?**
 **5. How many customers have churned straight after their initial free trial - what percentage is this rounded to the nearest whole number?**
