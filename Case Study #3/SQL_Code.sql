@@ -73,27 +73,154 @@ JOIN foodie_fi.subscriptions sub ON plans.plan_id = sub.plan_id
 
 -- 5. How many customers have churned straight after their initial free trial - what percentage is this rounded to the nearest whole number?
 
-WITH customer_ranked_cte AS (
+WITH customer_next_plan AS (
 	SELECT
-	sub.customer_id,
-	plans.plan_id,
-	ROW_NUMBER() OVER (
-		PARTITION BY sub.customer_id
-		ORDER BY sub.start_date) AS row_number
-	FROM foodie_fi.plans
-	JOIN foodie_fi.subscriptions sub ON plans.plan_id = sub.plan_id
+		customer_id,
+		plan_id,
+		LEAD(plan_id) OVER (
+			PARTITION BY customer_id 
+			ORDER BY start_date
+		) AS next_plan
+	FROM foodie_fi.subscriptions
 )
 
 SELECT
-	COUNT(CASE
-		WHEN (row_number = '2' AND plan_id = '4') THEN 1
-	END) AS customers_churned
+	COUNT(*) AS customers_churned,
+	ROUND(100.0 * COUNT(*) / (SELECT COUNT(DISTINCT customer_id) FROM customer_next_plan), 1) AS churn_percentage
 FROM
-	customer_ranked_cte
+	customer_next_plan 
+WHERE next_plan = 4
+	AND plan_id = 0
 
 -- 6. What is the number and percentage of customer plans after their initial free trial?
+
+WITH customer_next_plan AS (
+	SELECT
+		customer_id,
+		plan_id,
+		LEAD(plan_id) OVER (
+			PARTITION BY customer_id 
+			ORDER BY start_date
+		) AS next_plan
+	FROM foodie_fi.subscriptions
+)
+
+SELECT
+	next_plan,
+	COUNT(DISTINCT customer_id) customer_plan,
+	ROUND(100.0 * COUNT(*) / (SELECT COUNT(DISTINCT customer_id) FROM customer_next_plan), 1) AS churn_percentage
+FROM customer_next_plan
+WHERE plan_id = 0
+GROUP BY next_plan
+
 -- 7. What is the customer count and percentage breakdown of all 5 plan_name values at 2020-12-31?
+
+WITH customer_next_plan AS (
+	SELECT
+		customer_id,
+		plan_id,
+		start_date,
+		LEAD(plan_id) OVER (
+			PARTITION BY customer_id 
+			ORDER BY start_date
+		) AS next_plan
+	FROM foodie_fi.subscriptions
+	WHERE start_date <= '2020-12-31'
+)
+
+SELECT
+	plan_id,
+	COUNT(DISTINCT customer_id) customers,
+	ROUND(100.0 * COUNT(*) / (SELECT COUNT(DISTINCT customer_id) FROM customer_next_plan), 1) AS churn_percentage
+FROM customer_next_plan
+WHERE next_plan IS NULL
+GROUP BY plan_id
+
 -- 8. How many customers have upgraded to an annual plan in 2020?
+
+SELECT
+	COUNT(DISTINCT customer_id) AS customer_count
+FROM foodie_fi.subscriptions sub
+JOIN foodie_fi.plans ON plans.plan_id = sub.plan_id
+WHERE start_date <= '2020-12-31'
+	AND sub.plan_id = 3
+
 -- 9. How many days on average does it take for a customer to an annual plan from the day they join Foodie-Fi?
+
+WITH trial_plan AS (
+	SELECT 
+		customer_id,
+		start_date as trial_start
+	FROM foodie_fi.subscriptions
+	WHERE plan_id = 0
+),
+	annual_plan AS(
+	SELECT 
+		customer_id,
+		start_date as annual_start
+	FROM foodie_fi.subscriptions
+	WHERE plan_id = 3
+)
+
+SELECT 
+	ROUND(AVG(a.annual_start - t.trial_start), 1) AS avg_days_to_annual_upgrade
+FROM trial_plan t
+JOIN annual_plan a ON a.customer_id = t.customer_id
+
 -- 10. Can you further breakdown this average value into 30 day periods (i.e. 0-30 days, 31-60 days etc)
+
+WITH trial_plan AS (
+	SELECT 
+		customer_id,
+		start_date as trial_start
+	FROM foodie_fi.subscriptions
+	WHERE plan_id = 0
+),
+	annual_plan AS (
+	SELECT 
+		customer_id,
+		start_date as annual_start
+	FROM foodie_fi.subscriptions
+	WHERE plan_id = 3
+),
+	bins AS (
+	SELECT
+		WIDTH_BUCKET(a.annual_start - t.trial_start, 0, 365, 13) AS avg_days_to_annual_upgrade
+	FROM trial_plan t
+	JOIN annual_plan a ON a.customer_id = t.customer_id
+)
+	
+SELECT 
+  ((avg_days_to_annual_upgrade - 1) * 30 || ' - ' || avg_days_to_annual_upgrade * 30 || ' days') AS bucket, 
+  COUNT(*) AS num_of_customers
+FROM bins
+GROUP BY avg_days_to_annual_upgrade
+ORDER BY avg_days_to_annual_upgrade
+
+
 -- 11. How many customers downgraded from a pro monthly to a basic monthly plan in 2020?
+
+WITH customer_next_plan AS (
+	SELECT
+		customer_id,
+		plan_id,
+		LEAD(plan_id) OVER (
+			PARTITION BY customer_id 
+			ORDER BY start_date
+		) AS next_plan
+	FROM foodie_fi.subscriptions
+	WHERE DATE_PART('year', start_date) = 2020
+)
+
+SELECT 
+	COUNT(*)
+FROM customer_next_plan
+WHERE plan_id = 2
+	AND next_plan = 1
+
+
+
+
+
+
+
