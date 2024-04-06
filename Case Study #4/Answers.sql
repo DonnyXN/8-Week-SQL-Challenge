@@ -82,11 +82,14 @@ GROUP BY region
 
 -- B. Customer Transactions
 
-
-
 -- 1. What is the unique count and total amount for each transaction type?
 
-
+SELECT
+	DISTINCT(txn_type),
+	COUNT(txn_type),
+	SUM(txn_amount) AS total_amount
+FROM data_bank.customer_transactions
+GROUP BY DISTINCT(txn_type)
 
 -- 2. What is the average total historical deposit counts and amounts for all customers?
 
