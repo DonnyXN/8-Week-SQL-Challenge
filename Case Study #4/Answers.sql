@@ -93,7 +93,11 @@ GROUP BY DISTINCT(txn_type)
 
 -- 2. What is the average total historical deposit counts and amounts for all customers?
 
-
+SELECT
+	COUNT(txn_type) as deposits,
+	ROUND(AVG(txn_amount), 2) AS avg_deposit_amount
+FROM data_bank.customer_transactions
+WHERE txn_type = 'deposit'
 
 -- 3. For each month - how many Data Bank customers make more than 1 deposit and either 1 purchase or 1 withdrawal in a single month?
 
