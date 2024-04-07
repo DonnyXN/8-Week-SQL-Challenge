@@ -101,13 +101,44 @@ WHERE txn_type = 'deposit'
 
 -- 3. For each month - how many Data Bank customers make more than 1 deposit and either 1 purchase or 1 withdrawal in a single month?
 
+WITH transactions AS (
+	SELECT
+		customer_id,
+		TO_CHAR(txn_date, 'Month') AS month,
+		SUM(CASE WHEN txn_type = 'deposit' THEN 1 ELSE 0 END) AS deposits,
+		SUM(CASE WHEN txn_type = 'purchase' THEN 1 ELSE 0 END) AS purchases,
+		SUM(CASE WHEN txn_type = 'withdrawal' THEN 1 ELSE 0 END) AS withdrawals
+	FROM data_bank.customer_transactions
+	GROUP BY customer_id, month
+	ORDER BY customer_id
+)
 
+SELECT 
+	month,
+	COUNT(customer_id) AS customers
+FROM transactions
+WHERE deposits > 1
+	AND (purchases >= 1 OR withdrawals >= 1)
+GROUP BY month
+	
 
 -- 4. What is the closing balance for each customer at the end of the month?
 
-
-
 -- 5. What is the percentage of customers who increase their closing balance by more than 5%?
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
