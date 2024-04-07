@@ -124,6 +124,36 @@ GROUP BY month
 
 -- 4. What is the closing balance for each customer at the end of the month?
 
+-- Get income and expenses to find balance after each transaction
+WITH transaction_balance AS (
+	SELECT
+		customer_id,
+		txn_date,
+		--txn_type,
+		TO_CHAR(txn_date, 'Month') AS month,
+		SUM((CASE WHEN txn_type = 'deposit' THEN txn_amount ELSE 0 END) - (CASE WHEN txn_type <> 'deposit' THEN txn_amount ELSE 0 END)) AS balance
+	FROM data_bank.customer_transactions
+	GROUP BY customer_id, 
+		txn_date, 
+		month
+	ORDER BY customer_id, txn_date, month
+), 
+-- Get the running balance of each month
+balances_ranked AS (
+	SELECT
+		*,
+		SUM(balance) OVER (PARTITION BY customer_id ORDER BY txn_date) AS running_balance,
+		ROW_NUMBER() OVER (PARTITION BY customer_id, month ORDER BY txn_date DESC) AS r
+	FROM transaction_balance
+)
+
+SELECT 
+	customer_id,
+	month,
+	running_balance AS closing_balance
+FROM balances_ranked
+WHERE r = 1
+
 -- 5. What is the percentage of customers who increase their closing balance by more than 5%?
 
 
