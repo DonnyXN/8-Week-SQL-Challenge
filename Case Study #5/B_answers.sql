@@ -11,6 +11,20 @@ SELECT
 FROM data_mart.clean_weekly_sales
 
 -- What range of week numbers are missing from the dataset?
+
+WITH week_numbers AS (
+SELECT
+	GENERATE_SERIES(1, 52) AS numbers
+)
+
+SELECT
+	DISTINCT(numbers),
+	s.week_number
+FROM week_numbers n
+LEFT JOIN data_mart.clean_weekly_sales s ON s.week_number = n.numbers
+WHERE s.week_number IS null
+ORDER BY numbers
+
 -- How many total transactions were there for each year in the dataset?
 -- What is the total sales for each region for each month?
 -- What is the total count of transactions for each platform
