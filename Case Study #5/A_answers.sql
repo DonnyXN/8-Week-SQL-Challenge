@@ -2,6 +2,11 @@ SELECT
 	*
 FROM data_mart.clean_weekly_sales
 
+SELECT 
+	*
+FROM data_mart.weekly_sales
+
+
 -- Case Study Questions
 -- The following case study questions require some data cleaning steps before we start to unpack Danny’s key business questions in more depth.
 
@@ -47,7 +52,8 @@ SELECT
 	CASE
 		WHEN LEFT(segment, 1) = 'C' THEN 'Couples'
 		WHEN LEFT(segment, 1) = 'F' THEN 'Families'
-	ELSE 'unknown' END AS demographic
+	ELSE 'unknown' END AS demographic,
+	ROUND((sales::numeric / transactions::numeric), 2) AS avg_transaction
 FROM data_mart.weekly_sales
 )
 
