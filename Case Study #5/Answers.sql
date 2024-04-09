@@ -40,6 +40,8 @@ SELECT
 	region, 
 	platform, 
 	segment, 
+	CASE
+		WHEN 
 	
 FROM data_mart.weekly_sales
 )
