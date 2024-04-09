@@ -32,8 +32,7 @@ DROP TABLE IF EXISTS data_mart.clean_weekly_sales
 
 CREATE TABLE data_mart.clean_weekly_sales AS (
 SELECT 
-	*,
-	TO_DATE(week_date, 'DD/MM/YY') AS week_dates,
+	TO_DATE(week_date, 'DD/MM/YY') AS week_date,
 	DATE_PART('Week', TO_DATE(week_date, 'DD/MM/YY')) AS week_number,
 	DATE_PART('Month', TO_DATE(week_date, 'DD/MM/YY')) AS month_number,
 	DATE_PART('Year', TO_DATE(week_date, 'DD/MM/YY')) AS year_number,
@@ -41,8 +40,14 @@ SELECT
 	platform, 
 	segment, 
 	CASE
-		WHEN 
-	
+		WHEN RIGHT(segment, 1) = '1' THEN 'Young Adults'
+		WHEN RIGHT(segment, 1) = '2' THEN 'Middle Aged'
+		WHEN RIGHT(segment, 1) IN ('3', '4') THEN 'Retirees'
+	ELSE 'unknown' END AS age_band,
+	CASE
+		WHEN LEFT(segment, 1) = 'C' THEN 'Couples'
+		WHEN LEFT(segment, 1) = 'F' THEN 'Families'
+	ELSE 'unknown' END AS demographic
 FROM data_mart.weekly_sales
 )
 
