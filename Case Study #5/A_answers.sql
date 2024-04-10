@@ -54,7 +54,7 @@ SELECT
 	CASE
 		WHEN LEFT(segment, 1) = 'C' THEN 'Couples'
 		WHEN LEFT(segment, 1) = 'F' THEN 'Families'
-	ELSE 'unknown' END AS demographic,
+	ELSE 'Unknown' END AS demographic,
 	ROUND((sales::numeric / transactions::numeric), 2) AS avg_transaction
 FROM data_mart.weekly_sales
 )
