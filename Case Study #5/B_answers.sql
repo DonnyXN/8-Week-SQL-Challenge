@@ -50,6 +50,32 @@ FROM data_mart.clean_weekly_sales
 GROUP BY platform
 
 -- 6. What is the percentage of sales for Retail vs Shopify for each month?
+-- gets total sales per year, month, platform in cte
+-- then join with clean data to get percent
+
+	
+WITH monthly_sales AS (
+	SELECT
+		year_number,
+		month_number,
+		platform,
+		SUM(sales) AS month_sales
+	FROM data_mart.clean_weekly_sales
+	GROUP BY year_number, 
+		month_number,
+		platform
+	ORDER BY month_number
+)
+	
+SELECT 
+	year_number,
+	month_number,
+	ROUND(100.0 * MAX(CASE WHEN platform = 'Shopify' THEN month_sales END) / SUM(month_sales), 2) AS Shopfy_sales_pct,
+	ROUND(100.0 * MAX(CASE WHEN platform = 'Retail' THEN month_sales END) / SUM(month_sales), 2) AS Retail_sales_pct
+FROM monthly_sales m
+GROUP BY year_number,
+	month_number
+
 -- 7. What is the percentage of sales by demographic for each year in the dataset?
 -- 8. Which age_band and demographic values contribute the most to Retail sales?
 -- 9. Can we use the avg_transaction column to find the average transaction size for each year for Retail vs Shopify? If not - how would you calculate it instead?
