@@ -26,6 +26,13 @@ WHERE s.week_number IS null
 ORDER BY numbers
 
 -- How many total transactions were there for each year in the dataset?
+
+SELECT
+	year_number,
+	SUM(transactions)
+FROM data_mart.clean_weekly_sales
+GROUP BY year_number
+
 -- What is the total sales for each region for each month?
 -- What is the total count of transactions for each platform
 -- What is the percentage of sales for Retail vs Shopify for each month?
