@@ -102,17 +102,25 @@ SELECT
 	--platform,
 	age_band,
 	demographic,
-	SUM(sales) AS retail_sales
+	SUM(sales) AS retail_sales,
+	ROUND(100.0 * SUM(sales) / (SELECT SUM(sales) FROM data_mart.clean_weekly_sales), 2) AS pct
 FROM data_mart.clean_weekly_sales
 WHERE platform = 'Retail'
 GROUP BY age_band,
 	demographic
+ORDER BY retail_sales DESC
 
 -- 9. Can we use the avg_transaction column to find the average transaction size for each year for Retail vs Shopify? If not - how would you calculate it instead?
 
-
-
-
+SELECT 
+	year_number,
+	platform,
+	ROUND(AVG(avg_transaction), 0) AS avg_transaction_by_row,
+	SUM(sales) / SUM(transactions) AS avg_transaction_by_group
+FROM data_mart.clean_weekly_sales
+GROUP BY year_number,
+	platform
+ORDER BY year_number
 
 
 
