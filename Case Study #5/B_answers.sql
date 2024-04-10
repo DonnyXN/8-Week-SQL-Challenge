@@ -77,6 +77,26 @@ GROUP BY year_number,
 	month_number
 
 -- 7. What is the percentage of sales by demographic for each year in the dataset?
+
+WITH demographic_sales AS (
+	SELECT 
+		year_number,
+		demographic,
+		SUM(sales) AS yearly_sales
+	FROM data_mart.clean_weekly_sales
+	GROUP BY year_number, demographic
+	ORDER BY year_number
+)
+
+SELECT 
+	year_number, 
+	ROUND(100.0 * MAX(CASE WHEN demographic = 'Families' THEN yearly_sales END) / SUM(yearly_sales), 2) AS Families_sales_pct,
+	ROUND(100.0 * MAX(CASE WHEN demographic = 'Couples' THEN yearly_sales END) / SUM(yearly_sales), 2) AS Couples_sales_pct,
+	ROUND(100.0 * MAX(CASE WHEN demographic = 'Unknown' THEN yearly_sales END) / SUM(yearly_sales), 2) AS Unknown_sales_pct
+FROM demographic_sales
+GROUP BY year_number
+
+
 -- 8. Which age_band and demographic values contribute the most to Retail sales?
 -- 9. Can we use the avg_transaction column to find the average transaction size for each year for Retail vs Shopify? If not - how would you calculate it instead?
 
