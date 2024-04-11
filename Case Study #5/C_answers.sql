@@ -25,12 +25,13 @@ WITH weeks AS (
 		week_number,
 		sales
 	FROM data_mart.clean_weekly_sales 
-	WHERE week_number BETWEEN '21' AND '29'
+	WHERE (week_number BETWEEN '21' AND '28')
+		AND (year_number = '2020')
 )
 -- get the total sales of each 4 week period
 SELECT 
 	SUM(CASE WHEN week_number BETWEEN '21' AND '24' THEN sales END) AS before_changes,
-	SUM(CASE WHEN week_number BETWEEN '25' AND '29' THEN sales END) AS after_changes
+	SUM(CASE WHEN week_number BETWEEN '25' AND '28' THEN sales END) AS after_changes
 FROM weeks
 
 
@@ -42,13 +43,14 @@ WITH weeks AS (
 		week_number,
 		sales
 	FROM data_mart.clean_weekly_sales 
-	WHERE week_number BETWEEN '21' AND '29'
+	WHERE (week_number BETWEEN '21' AND '28')
+		AND (year_number = '2020')
 ),
 -- get the total sales of each 4 week period
 total_sales AS (
 	SELECT 
 		SUM(CASE WHEN week_number BETWEEN '21' AND '24' THEN sales END) AS before_changes,
-		SUM(CASE WHEN week_number BETWEEN '25' AND '29' THEN sales END) AS after_changes
+		SUM(CASE WHEN week_number BETWEEN '25' AND '28' THEN sales END) AS after_changes
 	FROM weeks
 )
 -- get the sales difference and pct difference
@@ -56,6 +58,7 @@ SELECT
 	after_changes - before_changes AS sales_diff,
 	ROUND(100.0 * (after_changes) / before_changes - 100, 2) as pct_change
 FROM total_sales
+
 
 -- 2. What about the entire 12 weeks before and after?
 
@@ -64,21 +67,70 @@ WITH weeks AS (
 		week_number,
 		sales
 	FROM data_mart.clean_weekly_sales 
-	WHERE week_number BETWEEN '21' AND '29'
+	WHERE (week_number BETWEEN '13' AND '37')
+	AND (year_number = '2020')
 ),
--- get the total sales of each 4 week period
 total_sales AS (
 	SELECT 
 		SUM(CASE WHEN week_number BETWEEN '13' AND '24' THEN sales END) AS before_changes,
 		SUM(CASE WHEN week_number BETWEEN '25' AND '37' THEN sales END) AS after_changes
 	FROM weeks
 )
--- get the sales difference and pct difference
 SELECT 
 	after_changes - before_changes AS sales_diff,
 	ROUND(100.0 * (after_changes) / before_changes - 100, 2) as pct_change
 FROM total_sales
 
+
 -- 3. How do the sale metrics for these 2 periods before and after compare with the previous years in 2018 and 2019?
 
+-- Part one for 4 week periods
+WITH weeks AS (
+	SELECT 
+		year_number,
+		week_number,
+		SUM(sales) as sales
+	FROM data_mart.clean_weekly_sales 
+	WHERE week_number BETWEEN '21' AND '28'
+	GROUP BY year_number,
+		week_number
+),
+total_sales AS (
+	SELECT 
+		year_number,
+		SUM(CASE WHEN week_number BETWEEN '21' AND '24' THEN sales END) AS before_changes,
+		SUM(CASE WHEN week_number BETWEEN '25' AND '28' THEN sales END) AS after_changes
+	FROM weeks
+	GROUP BY year_number
+)
+SELECT 
+	year_number,
+	after_changes - before_changes AS sales_diff,
+	ROUND(100.0 * (after_changes) / before_changes - 100, 2) as pct_change
+FROM total_sales
+
+-- Part two for 12 week periods
+WITH weeks AS (
+	SELECT 
+		year_number,
+		week_number,
+		SUM(sales) as sales
+	FROM data_mart.clean_weekly_sales 
+	WHERE week_number BETWEEN '13' AND '37'
+	GROUP BY year_number,
+		week_number
+),
+total_sales AS (
+	SELECT 
+		year_number,
+		SUM(CASE WHEN week_number BETWEEN '13' AND '24' THEN sales END) AS before_changes,
+		SUM(CASE WHEN week_number BETWEEN '25' AND '37' THEN sales END) AS after_changes
+	FROM weeks
+	GROUP BY year_number
+)
+SELECT 
+	year_number,
+	after_changes - before_changes AS sales_diff,
+	ROUND(100.0 * (after_changes) / before_changes - 100, 2) as pct_change
+FROM total_sales
 
