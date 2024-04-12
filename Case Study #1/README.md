@@ -1,10 +1,3 @@
-# 8-Week-SQL-Challenge
-SQL case studies from https://8weeksqlchallenge.com/
-
-This repository contains my solutions to the #8WeekSQLChallenge and serves to showcase my proficiency in SQL.
-
----
-
 ## Case Study #1 - Danny's Diner
 
 <img src="IMG/danny's_diner.png" width="500" height="500" alt="">
