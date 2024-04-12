@@ -1,8 +1,6 @@
 # **8-Week-SQL-Challenge**
-SQL case studies from https://8weeksqlchallenge.com/ 
-
 This repository contains my solutions to the #8WeekSQLChallenge and serves to showcase my proficiency in PostgreSQL.
-
+SQL case studies from https://8weeksqlchallenge.com/ 
 
 ## **Case Study #1 - Danny's Diner**
 
