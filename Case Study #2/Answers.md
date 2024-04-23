@@ -19,7 +19,10 @@ FROM
     customer_orders_clean
 ```
 
-![image](https://github.com/DonnyXN/8-Week-SQL-Challenge/assets/92007337/2ae6d0f2-30fa-46fd-b812-6438aabf67a5)
+| Pizzas Ordered |
+| -------------- |
+|        14      |
+
 
 ---
 **2. How many unique customer orders were made?**
@@ -29,6 +32,10 @@ SELECT
 FROM 
     customer_orders_clean
 ```
+| unique customer_orders |
+| -------------- |
+|        10      |
+
 ![image-1](https://github.com/DonnyXN/8-Week-SQL-Challenge/assets/92007337/d3d27b5c-8760-493f-a136-811288bea6c1)
 
 ---
