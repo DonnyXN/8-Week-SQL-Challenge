@@ -36,7 +36,6 @@ FROM
 | -------------- |
 |        10      |
 
-![image-1](https://github.com/DonnyXN/8-Week-SQL-Challenge/assets/92007337/d3d27b5c-8760-493f-a136-811288bea6c1)
 
 ---
 **3. How many successful orders were delivered by each runner?**
@@ -47,7 +46,10 @@ FROM
     runner_orders_clean
 WHERE cancellation = ''
 ```
-![image-2](https://github.com/DonnyXN/8-Week-SQL-Challenge/assets/92007337/935c9249-e9cf-4657-b9aa-6b38e8f7813a)
+
+| successful_orders |
+| -------------- |
+|        8      |
 
 ---
 **4. How many of each type of pizza was delivered?**
@@ -61,8 +63,10 @@ JOIN runner_orders_clean ro ON co.order_id=ro.order_id
 WHERE cancellation = '' -- avoid pizzas cancelled
 GROUP BY pizza_id
 ```
-
-![image-3](https://github.com/DonnyXN/8-Week-SQL-Challenge/assets/92007337/21303d55-7c4f-43db-a400-3a68d6978bbb)
+| pizza_id | pizzas_delivered |
+|----------|------------------|
+| 1        | 9                |
+| 2        | 3                |
 
 ---
 **5. How many Vegetarian and Meatlovers were ordered by each customer?**
