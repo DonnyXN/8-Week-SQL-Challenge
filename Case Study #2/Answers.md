@@ -79,7 +79,14 @@ FROM
 JOIN pizza_runner.pizza_names pi ON co.pizza_id=pi.pizza_id
 GROUP BY co.customer_id
 ```
-![image-4](https://github.com/DonnyXN/8-Week-SQL-Challenge/assets/92007337/134e95f5-3e11-4f3d-88a0-1a81ab4c4600)
+
+| customer_id  | pizzas_ordered |
+|--------------|----------------|
+| 101          | 3              |
+| 103          | 4              |
+| 104          | 3              |
+| 105          | 1              |
+| 102          | 3              |
 
 ---
 **6. What was the maximum number of pizzas delivered in a single order?**
@@ -93,7 +100,16 @@ JOIN runner_orders_clean ro ON co.order_id=ro.order_id
 WHERE cancellation = '' -- avoid pizzas cancelled
 GROUP BY co.order_id
 ```
-![image-5](https://github.com/DonnyXN/8-Week-SQL-Challenge/assets/92007337/d72c6a6c-8b31-4997-ae81-274c7c90bbe2)
+| order_id  | pizza_count |
+|-----------|-------------|
+| 1         | 1           |
+| 2         | 1           |
+| 3         | 2           |
+| 4         | 3           |
+| 5         | 1           |
+| 7         | 1           |
+| 8         | 1           |
+| 10        | 2           |
 
 ---
 **7. For each customer, how many delivered pizzas had at least 1 change and how many had no changes?**
