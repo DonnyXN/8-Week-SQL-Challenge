@@ -7,6 +7,12 @@ SELECT
 FROM clique_bait.users
 
 -- 2. How many cookies does each user have on average?
+
+SELECT
+	ROUND(1.0 * COUNT(cookie_id) / COUNT(DISTINCT(user_id)), 2) AS cookies_per_user
+FROM clique_bait.users
+
+
 -- 3. What is the unique number of visits by all users per month?
 -- 4. What is the number of events for each event type?
 -- 5. What is the percentage of visits which have a purchase event?
