@@ -20,8 +20,15 @@ SELECT
 FROM clique_bait.events
 GROUP BY TO_CHAR(event_time, 'Month')
 
-
 -- 4. What is the number of events for each event type?
+
+SELECT 
+	event_type,
+	COUNT(event_type)
+FROM clique_bait.events
+GROUP BY event_type
+ORDER BY 
+
 -- 5. What is the percentage of visits which have a purchase event?
 -- 6. What is the percentage of visits which view the checkout page but do not have a purchase event?
 -- 7. What are the top 3 pages by number of views?
