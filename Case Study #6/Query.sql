@@ -27,9 +27,15 @@ SELECT
 	COUNT(event_type)
 FROM clique_bait.events
 GROUP BY event_type
-ORDER BY 
 
 -- 5. What is the percentage of visits which have a purchase event?
+
+SELECT 
+	ROUND(100.0 * COUNT(DISTINCT(e.visit_id)) / (SELECT COUNT(DISTINCT(visit_id)) FROM clique_bait.events), 2) AS percent
+FROM clique_bait.events e
+LEFT JOIN clique_bait.event_identifier i ON e.event_type = i.event_type
+WHERE i.event_name = 'Purchase'
+
 -- 6. What is the percentage of visits which view the checkout page but do not have a purchase event?
 -- 7. What are the top 3 pages by number of views?
 -- 8. What is the number of views and cart adds for each product category?
