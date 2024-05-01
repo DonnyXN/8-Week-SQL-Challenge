@@ -91,3 +91,64 @@ GROUP BY ph.product_id,
 	ph.product_category
 ORDER BY purchases DESC
 LIMIT 3
+
+
+-- Product Funnel Analysis
+-- 1. Using a single SQL query - create a new output table which has the following details:
+
+-- How many times was each product viewed?
+-- How many times was each product added to cart?
+-- How many times was each product added to a cart but not purchased (abandoned)?
+-- How many times was each product purchased?
+
+WITH product_info AS (
+	SELECT 
+		DISTINCT(e.visit_id),
+		ph.page_name AS product_name,
+		ph.product_id,
+		SUM(CASE WHEN ei.event_name = 'Page View' THEN 1 ELSE 0 END) AS Viewed,
+		SUM(CASE WHEN ei.event_name = 'Add to Cart' THEN 1 ELSE 0 END) AS added_to_cart
+	FROM clique_bait.events e
+	LEFT JOIN clique_bait.page_hierarchy ph ON e.page_id = ph.page_id
+	LEFT JOIN clique_bait.event_identifier ei ON e.event_type = ei.event_type
+	WHERE ph.product_id is not null
+	GROUP BY DISTINCT(e.visit_id), ph.page_name, ph.product_id
+),
+purchases AS (
+	SELECT
+		DISTINCT(e.visit_id)
+	FROM clique_bait.events e
+	LEFT JOIN clique_bait.event_identifier ei ON e.event_type = ei.event_type
+	WHERE ei.event_name = 'Purchase'
+),
+combined_table AS(
+	SELECT
+		pi.product_name,
+		pi.product_id,
+		pi.viewed,
+		pi.added_to_cart,
+		CASE WHEN p.visit_id is not null THEN 1 ELSE 0 END AS purchase
+	FROM product_info pi
+	LEFT JOIN purchases p ON pi.visit_id = p.visit_id
+)
+SELECT
+	product_name,
+	product_id,
+	SUM(viewed) AS viewed,
+	SUM(added_to_cart) AS added_to_cart,
+	SUM(CASE WHEN added_to_cart = 1 AND purchase = 0 THEN 1 ELSE 0 END) AS abandoned,
+	SUM(purchase) as purchases
+FROM combined_table
+GROUP BY product_name, product_id
+ORDER BY product_id ASC
+
+
+-- Additionally, create another table which further aggregates the data for the above points but this time for each product category instead of individual products.
+
+-- Use your 2 new output tables - answer the following questions:
+
+-- 1. Which product had the most views, cart adds and purchases?
+-- 2. Which product was most likely to be abandoned?
+-- 3. Which product had the highest view to purchase percentage?
+-- 4. What is the average conversion rate from view to cart add?
+-- 5. What is the average conversion rate from cart add to purchase?
