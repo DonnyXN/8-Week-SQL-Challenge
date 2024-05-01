@@ -101,7 +101,7 @@ LIMIT 3
 -- How many times was each product added to a cart but not purchased (abandoned)?
 -- How many times was each product purchased?
 
-WITH product_info AS (
+WITH product_page AS (
 	SELECT 
 		DISTINCT(e.visit_id),
 		ph.page_name AS product_name,
@@ -128,24 +128,28 @@ combined_table AS(
 		pi.viewed,
 		pi.added_to_cart,
 		CASE WHEN p.visit_id is not null THEN 1 ELSE 0 END AS purchase
-	FROM product_info pi
+	FROM product_page pi
 	LEFT JOIN purchases p ON pi.visit_id = p.visit_id
+),
+product_info AS (
+	SELECT
+		product_name,
+		product_id,
+		SUM(viewed) AS viewed,
+		SUM(added_to_cart) AS added_to_cart,
+		SUM(CASE WHEN added_to_cart = 1 AND purchase = 0 THEN 1 ELSE 0 END) AS abandoned,
+		SUM(CASE WHEN added_to_cart = 1 AND purchase = 1 THEN 1 ELSE 0 END) AS purchases
+	FROM combined_table
+	GROUP BY product_name, product_id
+	ORDER BY product_id ASC
 )
 SELECT
-	product_name,
-	product_id,
-	SUM(viewed) AS viewed,
-	SUM(added_to_cart) AS added_to_cart,
-	SUM(CASE WHEN added_to_cart = 1 AND purchase = 0 THEN 1 ELSE 0 END) AS abandoned,
-	SUM(CASE WHEN added_to_cart = 1 AND purchase = 1 THEN 1 ELSE 0 END) AS purchases
-FROM combined_table
-GROUP BY product_name, product_id
-ORDER BY product_id ASC
-
+	*
+FROM product_info
 
 -- Additionally, create another table which further aggregates the data for the above points but this time for each product category instead of individual products.
 
-WITH product_info AS (
+WITH product_page AS (
 	SELECT 
 		DISTINCT(e.visit_id),
 		ph.product_category,
@@ -170,17 +174,22 @@ combined_table AS(
 		pi.viewed,
 		pi.added_to_cart,
 		CASE WHEN p.visit_id is not null THEN 1 ELSE 0 END AS purchase
-	FROM product_info pi
+	FROM product_page pi
 	LEFT JOIN purchases p ON pi.visit_id = p.visit_id
+),
+product_info AS (
+	SELECT
+		product_category,
+		SUM(viewed) AS viewed,
+		SUM(added_to_cart) AS added_to_cart,
+		SUM(CASE WHEN added_to_cart = 1 AND purchase = 0 THEN 1 ELSE 0 END) AS abandoned,
+		SUM(CASE WHEN added_to_cart = 1 AND purchase = 1 THEN 1 ELSE 0 END) AS purchases
+	FROM combined_table
+	GROUP BY product_category
 )
 SELECT
-	product_category,
-	SUM(viewed) AS viewed,
-	SUM(added_to_cart) AS added_to_cart,
-	SUM(CASE WHEN added_to_cart = 1 AND purchase = 0 THEN 1 ELSE 0 END) AS abandoned,
-	SUM(CASE WHEN added_to_cart = 1 AND purchase = 1 THEN 1 ELSE 0 END) AS purchases
-FROM combined_table
-GROUP BY product_category
+	*
+FROM product_info
 
 
 -- Use your 2 new output tables - answer the following questions:
@@ -188,10 +197,160 @@ GROUP BY product_category
 -- 1. Which product had the most views, cart adds and purchases?
 
 	-- Oyster has the most views
-	-- Lobster has the most cart adds
-	-- Oyster
+	-- Lobster has the most cart adds and purchases
 	
 -- 2. Which product was most likely to be abandoned?
+
+	-- Russian Caviar is most likely to be abandoned
+
 -- 3. Which product had the highest view to purchase percentage?
+
+WITH product_page AS (
+	SELECT 
+		DISTINCT(e.visit_id),
+		ph.page_name AS product_name,
+		ph.product_id,
+		SUM(CASE WHEN ei.event_name = 'Page View' THEN 1 ELSE 0 END) AS Viewed,
+		SUM(CASE WHEN ei.event_name = 'Add to Cart' THEN 1 ELSE 0 END) AS added_to_cart
+	FROM clique_bait.events e
+	LEFT JOIN clique_bait.page_hierarchy ph ON e.page_id = ph.page_id
+	LEFT JOIN clique_bait.event_identifier ei ON e.event_type = ei.event_type
+	WHERE ph.product_id is not null
+	GROUP BY DISTINCT(e.visit_id), ph.page_name, ph.product_id
+),
+purchases AS (
+	SELECT
+		DISTINCT(e.visit_id)
+	FROM clique_bait.events e
+	LEFT JOIN clique_bait.event_identifier ei ON e.event_type = ei.event_type
+	WHERE ei.event_name = 'Purchase'
+),
+combined_table AS(
+	SELECT
+		pi.product_name,
+		pi.product_id,
+		pi.viewed,
+		pi.added_to_cart,
+		CASE WHEN p.visit_id is not null THEN 1 ELSE 0 END AS purchase
+	FROM product_page pi
+	LEFT JOIN purchases p ON pi.visit_id = p.visit_id
+),
+product_info AS (
+	SELECT
+		product_name,
+		product_id,
+		SUM(viewed) AS viewed,
+		SUM(added_to_cart) AS added_to_cart,
+		SUM(CASE WHEN added_to_cart = 1 AND purchase = 0 THEN 1 ELSE 0 END) AS abandoned,
+		SUM(CASE WHEN added_to_cart = 1 AND purchase = 1 THEN 1 ELSE 0 END) AS purchases
+	FROM combined_table
+	GROUP BY product_name, product_id
+	ORDER BY product_id ASC
+)
+SELECT
+	product_name,
+	ROUND(100.0 * purchases / viewed, 2) AS view_purchase_ratio_pct
+FROM product_info
+ORDER BY view_purchase_ratio_pct DESC
+
+	-- Lobster has the highest view to purchase percentage
+
 -- 4. What is the average conversion rate from view to cart add?
+
+WITH product_page AS (
+	SELECT 
+		DISTINCT(e.visit_id),
+		ph.page_name AS product_name,
+		ph.product_id,
+		SUM(CASE WHEN ei.event_name = 'Page View' THEN 1 ELSE 0 END) AS Viewed,
+		SUM(CASE WHEN ei.event_name = 'Add to Cart' THEN 1 ELSE 0 END) AS added_to_cart
+	FROM clique_bait.events e
+	LEFT JOIN clique_bait.page_hierarchy ph ON e.page_id = ph.page_id
+	LEFT JOIN clique_bait.event_identifier ei ON e.event_type = ei.event_type
+	WHERE ph.product_id is not null
+	GROUP BY DISTINCT(e.visit_id), ph.page_name, ph.product_id
+),
+purchases AS (
+	SELECT
+		DISTINCT(e.visit_id)
+	FROM clique_bait.events e
+	LEFT JOIN clique_bait.event_identifier ei ON e.event_type = ei.event_type
+	WHERE ei.event_name = 'Purchase'
+),
+combined_table AS(
+	SELECT
+		pi.product_name,
+		pi.product_id,
+		pi.viewed,
+		pi.added_to_cart,
+		CASE WHEN p.visit_id is not null THEN 1 ELSE 0 END AS purchase
+	FROM product_page pi
+	LEFT JOIN purchases p ON pi.visit_id = p.visit_id
+),
+product_info AS (
+	SELECT
+		product_name,
+		product_id,
+		SUM(viewed) AS viewed,
+		SUM(added_to_cart) AS added_to_cart,
+		SUM(CASE WHEN added_to_cart = 1 AND purchase = 0 THEN 1 ELSE 0 END) AS abandoned,
+		SUM(CASE WHEN added_to_cart = 1 AND purchase = 1 THEN 1 ELSE 0 END) AS purchases
+	FROM combined_table
+	GROUP BY product_name, product_id
+	ORDER BY product_id ASC
+)
+SELECT
+	ROUND(AVG(100.0 * added_to_cart / viewed), 2) AS avg_view_cart_pct
+FROM product_info
+
+	-- 60.95%
+
 -- 5. What is the average conversion rate from cart add to purchase?
+
+WITH product_page AS (
+	SELECT 
+		DISTINCT(e.visit_id),
+		ph.page_name AS product_name,
+		ph.product_id,
+		SUM(CASE WHEN ei.event_name = 'Page View' THEN 1 ELSE 0 END) AS Viewed,
+		SUM(CASE WHEN ei.event_name = 'Add to Cart' THEN 1 ELSE 0 END) AS added_to_cart
+	FROM clique_bait.events e
+	LEFT JOIN clique_bait.page_hierarchy ph ON e.page_id = ph.page_id
+	LEFT JOIN clique_bait.event_identifier ei ON e.event_type = ei.event_type
+	WHERE ph.product_id is not null
+	GROUP BY DISTINCT(e.visit_id), ph.page_name, ph.product_id
+),
+purchases AS (
+	SELECT
+		DISTINCT(e.visit_id)
+	FROM clique_bait.events e
+	LEFT JOIN clique_bait.event_identifier ei ON e.event_type = ei.event_type
+	WHERE ei.event_name = 'Purchase'
+),
+combined_table AS(
+	SELECT
+		pi.product_name,
+		pi.product_id,
+		pi.viewed,
+		pi.added_to_cart,
+		CASE WHEN p.visit_id is not null THEN 1 ELSE 0 END AS purchase
+	FROM product_page pi
+	LEFT JOIN purchases p ON pi.visit_id = p.visit_id
+),
+product_info AS (
+	SELECT
+		product_name,
+		product_id,
+		SUM(viewed) AS viewed,
+		SUM(added_to_cart) AS added_to_cart,
+		SUM(CASE WHEN added_to_cart = 1 AND purchase = 0 THEN 1 ELSE 0 END) AS abandoned,
+		SUM(CASE WHEN added_to_cart = 1 AND purchase = 1 THEN 1 ELSE 0 END) AS purchases
+	FROM combined_table
+	GROUP BY product_name, product_id
+	ORDER BY product_id ASC
+)
+SELECT
+	ROUND(AVG(100.0 * purchases / added_to_cart), 2) AS avg_cart_to_purchase
+FROM product_info
+
+	-- 75.93%
