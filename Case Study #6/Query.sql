@@ -37,6 +37,30 @@ LEFT JOIN clique_bait.event_identifier i ON e.event_type = i.event_type
 WHERE i.event_name = 'Purchase'
 
 -- 6. What is the percentage of visits which view the checkout page but do not have a purchase event?
+
+WITH view_checkout AS (
+	SELECT
+		SUM(CASE WHEN page_name = 'Checkout' AND event_name = 'Page View' THEN 1 ELSE 0 END) AS checkout,
+		SUM(CASE WHEN event_name = 'Purchase' THEN 1 ELSE 0 END) AS purchase
+	FROM clique_bait.events e
+	LEFT JOIN clique_bait.page_hierarchy ph ON e.page_id = ph.page_id
+	LEFT JOIN clique_bait.event_identifier ei ON e.event_type = ei.event_type
+)
+SELECT
+	ROUND((100.0 * checkout / purchase), 2) - 100 AS percent
+FROM view_checkout
+
 -- 7. What are the top 3 pages by number of views?
+
+SELECT 
+	page_name,
+	COUNT(DISTINCT(visit_id)) AS views
+FROM clique_bait.events e
+LEFT JOIN clique_bait.page_hierarchy ph ON e.page_id = ph.page_id
+LEFT JOIN clique_bait.event_identifier ei ON e.event_type = ei.event_type
+GROUP BY page_name
+ORDER BY views DESC
+LIMIT 3
+
 -- 8. What is the number of views and cart adds for each product category?
 -- 9. What are the top 3 products by purchases?
