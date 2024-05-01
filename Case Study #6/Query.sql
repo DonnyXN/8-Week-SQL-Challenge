@@ -137,7 +137,7 @@ SELECT
 	SUM(viewed) AS viewed,
 	SUM(added_to_cart) AS added_to_cart,
 	SUM(CASE WHEN added_to_cart = 1 AND purchase = 0 THEN 1 ELSE 0 END) AS abandoned,
-	SUM(purchase) as purchases
+	SUM(CASE WHEN added_to_cart = 1 AND purchase = 1 THEN 1 ELSE 0 END) AS purchases
 FROM combined_table
 GROUP BY product_name, product_id
 ORDER BY product_id ASC
@@ -178,7 +178,7 @@ SELECT
 	SUM(viewed) AS viewed,
 	SUM(added_to_cart) AS added_to_cart,
 	SUM(CASE WHEN added_to_cart = 1 AND purchase = 0 THEN 1 ELSE 0 END) AS abandoned,
-	SUM(purchase) as purchases
+	SUM(CASE WHEN added_to_cart = 1 AND purchase = 1 THEN 1 ELSE 0 END) AS purchases
 FROM combined_table
 GROUP BY product_category
 
@@ -186,6 +186,11 @@ GROUP BY product_category
 -- Use your 2 new output tables - answer the following questions:
 
 -- 1. Which product had the most views, cart adds and purchases?
+
+	-- Oyster has the most views
+	-- Lobster has the most cart adds
+	-- Oyster
+	
 -- 2. Which product was most likely to be abandoned?
 -- 3. Which product had the highest view to purchase percentage?
 -- 4. What is the average conversion rate from view to cart add?
