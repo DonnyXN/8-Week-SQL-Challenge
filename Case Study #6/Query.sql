@@ -63,4 +63,16 @@ ORDER BY views DESC
 LIMIT 3
 
 -- 8. What is the number of views and cart adds for each product category?
+
+SELECT 
+	ph.product_category,
+	SUM(CASE WHEN ei.event_name = 'Page View' THEN 1 ELSE 0 END) AS page_view,
+	SUM(CASE WHEN ei.event_name = 'Add to Cart' THEN 1 ELSE 0 END) AS cart_adds
+FROM clique_bait.events e
+LEFT JOIN clique_bait.page_hierarchy ph ON e.page_id = ph.page_id
+LEFT JOIN clique_bait.event_identifier ei ON e.event_type = ei.event_type
+WHERE ph.product_category is not null
+GROUP BY ph.product_category
+
+
 -- 9. What are the top 3 products by purchases?
