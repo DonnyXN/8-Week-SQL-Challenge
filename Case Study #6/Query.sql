@@ -76,3 +76,18 @@ GROUP BY ph.product_category
 
 
 -- 9. What are the top 3 products by purchases?
+
+SELECT 
+	ph.product_id,
+	ph.page_name,
+	ph.product_category,
+	COUNT(ei.event_name) AS purchases
+FROM clique_bait.events e
+LEFT JOIN clique_bait.page_hierarchy ph ON e.page_id = ph.page_id
+LEFT JOIN clique_bait.event_identifier ei ON e.event_type = ei.event_type
+WHERE ph.product_id is not null
+GROUP BY ph.product_id, 
+	ph.page_name, 
+	ph.product_category
+ORDER BY purchases DESC
+LIMIT 3
