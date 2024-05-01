@@ -145,6 +145,44 @@ ORDER BY product_id ASC
 
 -- Additionally, create another table which further aggregates the data for the above points but this time for each product category instead of individual products.
 
+WITH product_info AS (
+	SELECT 
+		DISTINCT(e.visit_id),
+		ph.product_category,
+		SUM(CASE WHEN ei.event_name = 'Page View' THEN 1 ELSE 0 END) AS Viewed,
+		SUM(CASE WHEN ei.event_name = 'Add to Cart' THEN 1 ELSE 0 END) AS added_to_cart
+	FROM clique_bait.events e
+	LEFT JOIN clique_bait.page_hierarchy ph ON e.page_id = ph.page_id
+	LEFT JOIN clique_bait.event_identifier ei ON e.event_type = ei.event_type
+	WHERE ph.product_category is not null
+	GROUP BY DISTINCT(e.visit_id), ph.product_category
+),
+purchases AS (
+	SELECT
+		DISTINCT(e.visit_id)
+	FROM clique_bait.events e
+	LEFT JOIN clique_bait.event_identifier ei ON e.event_type = ei.event_type
+	WHERE ei.event_name = 'Purchase'
+),
+combined_table AS(
+	SELECT
+		pi.product_category,
+		pi.viewed,
+		pi.added_to_cart,
+		CASE WHEN p.visit_id is not null THEN 1 ELSE 0 END AS purchase
+	FROM product_info pi
+	LEFT JOIN purchases p ON pi.visit_id = p.visit_id
+)
+SELECT
+	product_category,
+	SUM(viewed) AS viewed,
+	SUM(added_to_cart) AS added_to_cart,
+	SUM(CASE WHEN added_to_cart = 1 AND purchase = 0 THEN 1 ELSE 0 END) AS abandoned,
+	SUM(purchase) as purchases
+FROM combined_table
+GROUP BY product_category
+
+
 -- Use your 2 new output tables - answer the following questions:
 
 -- 1. Which product had the most views, cart adds and purchases?
