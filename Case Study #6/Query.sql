@@ -397,6 +397,35 @@ GROUP BY u.user_id,
 -- Some ideas you might want to investigate further include:
 
 -- Identifying users who have received impressions during each campaign period and comparing each metric with other users who did not have an impression event
+
+WITH campaign_summary AS (
+	SELECT 
+	  u.user_id, 
+	  e.visit_id, 
+	  MIN(e.event_time) AS visit_start_time,
+	  SUM(CASE WHEN e.event_type = 1 THEN 1 ELSE 0 END) AS page_views,
+	  SUM(CASE WHEN e.event_type = 2 THEN 1 ELSE 0 END) AS cart_adds,
+	  SUM(CASE WHEN e.event_type = 3 THEN 1 ELSE 0 END) AS purchases,
+	  c.campaign_name,
+	  SUM(CASE WHEN e.event_type = 4 THEN 1 ELSE 0 END) AS impression, 
+	  SUM(CASE WHEN e.event_type = 5 THEN 1 ELSE 0 END) AS click, 
+	  STRING_AGG(CASE WHEN p.product_id IS NOT NULL AND e.event_type = 2 THEN p.page_name ELSE NULL END, 
+		', ' ORDER BY e.sequence_number) AS cart_products
+	FROM clique_bait.users u
+	INNER JOIN clique_bait.events e
+	  ON u.cookie_id = e.cookie_id
+	LEFT JOIN clique_bait.campaign_identifier c ON e.event_time BETWEEN c.start_date AND c.end_date
+	LEFT JOIN clique_bait.page_hierarchy p ON e.page_id = p.page_id
+	GROUP BY u.user_id,
+		e.visit_id,
+		c.campaign_name
+)
+SELECT 
+	COUNT(DISTINCT user_id) AS received_impressions
+FROM campaign_summary
+WHERE impression > 0
+AND campaign_name IS NOT NULL
+
 -- Does clicking on an impression lead to higher purchase rates?
 -- What is the uplift in purchase rate when comparing users who click on a campaign impression versus users who do not receive an impression? What if we compare them with users who just an impression but do not click?
 -- What metrics can you use to quantify the success or failure of each campaign compared to eachother?
